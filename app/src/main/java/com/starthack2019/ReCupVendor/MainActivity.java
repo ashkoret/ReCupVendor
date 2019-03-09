@@ -141,7 +141,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
                 catch (IOException e) {mResultTextView.setText("bad post");}
 
-                client.disconnect();*/
+                client.disconnect();**/
 
                 RequestQueue queue = Volley.newRequestQueue(this);
                 String url ="http://130.82.239.118:3000/transactions/create";
