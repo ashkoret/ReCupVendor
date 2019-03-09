@@ -16,6 +16,7 @@ import android.widget.TextView;
 import com.google.gson.*;
 import java.util.Iterator;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
@@ -96,10 +97,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 String UserPK = "";
                 String UserSignature = "";
                 int TrTimeStamp = 0;
-                JsonParser parser = new JsonParser();
-                JsonObject UserCode = parser.parse("{\"a\": \"A\"}").getAsJsonObject();
+                try {
+                    JSONObject obj = new JSONObject(UserBarcode);
+                    UserPK = obj.getString("publicKey");
+                    UserSignature = obj.getString("signature");
+                    TrTimeStamp = obj.getInt("timestamp");
+                }
+                catch(JSONException e){}
 
-                
 
                 // Start Client
                 AsyncHttpClient client = new AsyncHttpClient();
@@ -110,6 +115,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.put("signature", UserSignature);
                 params.put("cupqrcode", CupBarcode);
                 params.put("timestamp", TrTimeStamp);
+                mResultTextView.setText("User code parsed");
 
                 // Prepare POST request
                 client.post("http://130.82.239.118:3000/transactions/create", params, new AsyncHttpResponseHandler() {
