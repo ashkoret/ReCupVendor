@@ -1,5 +1,6 @@
 package com.starthack2019.ReCupVendor;
 
+import android.os.Build;
 import android.os.Bundle;
 
 import android.os.StrictMode;
@@ -19,9 +20,27 @@ import android.widget.TextView;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 
+import java.util.concurrent.TimeUnit;
+
 import com.github.nkzawa.socketio.client.IO;
 import com.github.nkzawa.socketio.client.Socket;
+
+import java.io.IOException;
 import java.net.URISyntaxException;
+
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.MalformedURLException;
+import  java.net.ProtocolException;
+import java.io.OutputStream;
+import java.io.BufferedOutputStream;
+
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
+import com.android.volley.Request;
 
 import org.json.JSONObject;
 import org.json.JSONException;
@@ -44,6 +63,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //StrictMode.ThreadPolicy policy = StrictMode.ThreadPolicy.LAX;
+        //StrictMode.setThreadPolicy(policy);
+
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
@@ -85,23 +107,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.execute_button:
                 JSONObject codes = new JSONObject();
                 Gson gson = new Gson();
-                String JsonString = "";
+                String JsonString = " ";
                 try {
                     codes.accumulate("user_QRcode", UserBarcode);
                     codes.accumulate("cup_QRcode", CupBarcode);
                     JsonString = gson.toJson(codes);
+                    mResultTextView.setText(JsonString);
+
                 }
                 catch(JSONException f){
                     f.printStackTrace();
                 }
+                /*
+                HttpURLConnection client = null;
                 try {
-                    socket = IO.socket("http://yourlocalIPaddress:3000");
-                    socket.connect();
+                    URL url = new URL("http://130.82.239.118:3000/transactions/create");
+                    client = (HttpURLConnection) url.openConnection();
                 }
-                 catch (URISyntaxException e) {
-                     e.printStackTrace();
-                 }
-                socket.emit("qrcodes", JsonString);
+                catch(IOException e) {mResultTextView.setText("bad connection");}
+
+                try {
+                    client.setRequestMethod("POST");
+                    client.setRequestProperty("Key", "Value");
+                    client.setDoOutput(true);
+                }
+                catch(ProtocolException e){mResultTextView.setText("bad request");}
+
+                try {
+                    BufferedOutputStream outputPost = new BufferedOutputStream(client.getOutputStream());
+                    outputPost.write(JsonString.getBytes());
+                    outputPost.flush();
+                    outputPost.close();
+                }
+                catch (IOException e) {mResultTextView.setText("bad post");}
+
+                client.disconnect();*/
+
+                RequestQueue queue = Volley.newRequestQueue(this);
+                String url ="http://130.82.239.118:3000/transactions/create";
+
+                // Request a string response from the provided URL.
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
+                        new Response.Listener<String>() {
+                            @Override
+                            public void onResponse(String response) {
+                                // Display the first 500 characters of the response string.
+                                mResultTextView.setText("Response is: "+ response.substring(0,500));
+                            }
+                        }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        mResultTextView.setText(error.toString());
+                    }
+                });
+
+// Add the request to the RequestQueue.
+                queue.add(stringRequest);
 
                 break;
 
