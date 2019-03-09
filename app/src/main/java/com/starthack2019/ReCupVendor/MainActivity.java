@@ -20,13 +20,13 @@ import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.starthack2019.ReCupVendor.barcode.BarcodeCaptureActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener{
 
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int BARCODE_READER_REQUEST_CODE = 1;
     private TextView mResultTextView;
-    String UserBarcode = "";
-    String CupBarcode = "";
+    private String UserBarcode = "";
+    private String CupBarcode = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,17 +38,47 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         Button ScanUserBarcode_btn = (Button) findViewById(R.id.scan_user_barcode_button);
+        ScanUserBarcode_btn.setOnClickListener(this);
         Button ScanCupBarcode_btn = (Button) findViewById(R.id.scan_cup_barcode_button);
+        ScanCupBarcode_btn.setOnClickListener(this);
         Button Execute_btn = (Button) findViewById(R.id.execute_button);
+        Execute_btn.setOnClickListener(this);
         mResultTextView = (TextView) findViewById(R.id.result_textview);
 
-        ScanUserBarcode_btn.setOnClickListener(new View.OnClickListener() {
+        /*ScanUserBarcode_btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
                 startActivityForResult(intent, BARCODE_READER_REQUEST_CODE);
             }
-        });
+        });*/
+    }
+
+    @Override
+    public void onClick(View v) {
+
+        switch (v.getId()) {
+
+            case R.id.scan_cup_barcode_button:
+                Intent intent_cup = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
+                startActivityForResult(intent_cup, BARCODE_READER_REQUEST_CODE);
+                CupBarcode = mResultTextView.getText().toString();
+                break;
+
+            case R.id.scan_user_barcode_button:
+                Intent intent_user = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
+                startActivityForResult(intent_user, BARCODE_READER_REQUEST_CODE);
+                UserBarcode = mResultTextView.getText().toString();
+                break;
+
+            case R.id.execute_button:
+                // do your code
+                break;
+
+            default:
+                break;
+        }
+
     }
 
     @Override
