@@ -22,12 +22,14 @@ import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.starthack2019.ReCupVendor.barcode.BarcodeCaptureActivity;
 
+import java.lang.InterruptedException;
+
 import cz.msebera.android.httpclient.Header;
 
 @SuppressLint("SetTextI18n")
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
-    private Socket socket;
+    private String ButtonClicked = "";
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
     private static final int BARCODE_READER_REQUEST_CODE = 1;
     private TextView mResultTextView;
@@ -62,24 +64,25 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-
+        int delay = 100;
         switch (v.getId()) {
 
             case R.id.scan_cup2remove_barcode_button:
+                ButtonClicked = "scan_cup2remove_barcode_button";
                 Intent intent_cup_remove = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
                 startActivityForResult(intent_cup_remove, BARCODE_READER_REQUEST_CODE);
                 break;
 
             case R.id.scan_cup_barcode_button:
+                ButtonClicked = "scan_cup_barcode_button";
                 Intent intent_cup = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
                 startActivityForResult(intent_cup, BARCODE_READER_REQUEST_CODE);
-                CupBarcode = mResultTextView.getText().toString();
                 break;
 
             case R.id.scan_user_barcode_button:
+                ButtonClicked = "scan_user_barcode_button";
                 Intent intent_user = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
                 startActivityForResult(intent_user, BARCODE_READER_REQUEST_CODE);
-                UserBarcode = mResultTextView.getText().toString();
                 break;
 
             case R.id.execute_button:
@@ -87,7 +90,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if(UserBarcode.isEmpty() && CupBarcode.isEmpty()) {
                     mResultTextView.setText("Scan both codes first");
                     break;
-                };
+                }
+
+                mResultTextView.setText(CupBarcode+" "+UserBarcode);
 
                 // Start Client
                 AsyncHttpClient client = new AsyncHttpClient();
@@ -127,10 +132,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     Barcode barcode = data.getParcelableExtra(BarcodeCaptureActivity.BarcodeObject);
                     Point[] p = barcode.cornerPoints;
                     mResultTextView.setText(barcode.displayValue);
+                    if (ButtonClicked == "scan_cup_barcode_button") {
+                        CupBarcode = mResultTextView.getText().toString();
+                    } else if (ButtonClicked == "scan_user_barcode_button"){
+                        UserBarcode = mResultTextView.getText().toString();
+                    }
                 } else mResultTextView.setText(R.string.no_barcode_captured);
             } else Log.e(LOG_TAG, String.format(getString(R.string.barcode_error_format),
                     CommonStatusCodes.getStatusCodeString(resultCode)));
         } else super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    @Override
+    protected void onStop(){
+        super.onStop();
+
     }
 
     @Override
