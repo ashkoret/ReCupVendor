@@ -112,7 +112,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // Do the POST request: Send data to backend
                 RequestParams params = new RequestParams();
                 params.put("customerpubkey", UserPK);
-                params.put("signature", UserSignature);
+                params.put("customersignature", UserSignature);
                 params.put("cupqrcode", CupBarcode);
                 params.put("timestamp", TrTimeStamp);
                 mResultTextView.setText("User code parsed");
