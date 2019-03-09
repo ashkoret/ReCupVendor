@@ -4,6 +4,7 @@
     <string name="scan_customer_barcode">Scan User</string>
     <string name="scan_cup_barcode">Scan Cup</string>
     <string name="execute">Execute</string>
+    <string name="remove">Remove</string>
 
     <!-- Strings related to MainActivity-->
     <string name="scan_barcode_button">Scan barcode</string>
