@@ -13,16 +13,16 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import com.google.gson.*;
+import java.util.Iterator;
+import org.json.JSONException;
 
-import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.loopj.android.http.AsyncHttpClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 import com.starthack2019.ReCupVendor.barcode.BarcodeCaptureActivity;
-
-import java.lang.InterruptedException;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -93,14 +93,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
 
                 mResultTextView.setText(CupBarcode+" "+UserBarcode);
+                String UserPK = "";
+                String UserSignature = "";
+                int TrTimeStamp = 0;
+                JsonParser parser = new JsonParser();
+                JsonObject UserCode = parser.parse("{\"a\": \"A\"}").getAsJsonObject();
+
+                
 
                 // Start Client
                 AsyncHttpClient client = new AsyncHttpClient();
 
                 // Do the POST request: Send data to backend
                 RequestParams params = new RequestParams();
-                params.put("customerqrcode", UserBarcode);
+                params.put("customerpubkey", UserPK);
+                params.put("signature", UserSignature);
                 params.put("cupqrcode", CupBarcode);
+                params.put("timestamp", TrTimeStamp);
 
                 // Prepare POST request
                 client.post("http://130.82.239.118:3000/transactions/create", params, new AsyncHttpResponseHandler() {
