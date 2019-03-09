@@ -1,54 +1,31 @@
 package com.starthack2019.ReCupVendor;
 
-import android.os.Build;
+import android.annotation.SuppressLint;
+import android.content.Intent;
+import android.graphics.Point;
 import android.os.Bundle;
-
 import android.os.StrictMode;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
-
-import android.content.Intent;
-import android.graphics.Point;
-
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.github.nkzawa.socketio.client.Socket;
 import com.google.android.gms.common.api.CommonStatusCodes;
 import com.google.android.gms.vision.barcode.Barcode;
-
-import java.util.concurrent.TimeUnit;
-
-import com.github.nkzawa.socketio.client.IO;
-import com.github.nkzawa.socketio.client.Socket;
-
-import java.io.IOException;
-import java.net.URISyntaxException;
-
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.MalformedURLException;
-import  java.net.ProtocolException;
-import java.io.OutputStream;
-import java.io.BufferedOutputStream;
-
-import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.toolbox.StringRequest;
-import com.android.volley.toolbox.Volley;
-import com.android.volley.Request;
-
-import org.json.JSONObject;
-import org.json.JSONException;
-import com.google.gson.*;
-
+import com.loopj.android.http.AsyncHttpClient;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 import com.starthack2019.ReCupVendor.barcode.BarcodeCaptureActivity;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener{
+import cz.msebera.android.httpclient.Header;
+
+@SuppressLint("SetTextI18n")
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
     private Socket socket;
     private static final String LOG_TAG = MainActivity.class.getSimpleName();
@@ -56,6 +33,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private TextView mResultTextView;
     private String UserBarcode = "";
     private String CupBarcode = "";
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +68,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.scan_cup2remove_barcode_button:
                 Intent intent_cup_remove = new Intent(getApplicationContext(), BarcodeCaptureActivity.class);
                 startActivityForResult(intent_cup_remove, BARCODE_READER_REQUEST_CODE);
-                CupBarcode = mResultTextView.getText().toString();
                 break;
 
             case R.id.scan_cup_barcode_button:
@@ -105,67 +83,36 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
 
             case R.id.execute_button:
-                JSONObject codes = new JSONObject();
-                Gson gson = new Gson();
-                String JsonString = " ";
-                try {
-                    codes.accumulate("user_QRcode", UserBarcode);
-                    codes.accumulate("cup_QRcode", CupBarcode);
-                    JsonString = gson.toJson(codes);
-                    mResultTextView.setText(JsonString);
+                // Do not execute if we have no values for our codes
+                if(UserBarcode.isEmpty() && CupBarcode.isEmpty()) {
+                    mResultTextView.setText("Scan both codes first");
+                    break;
+                };
 
-                }
-                catch(JSONException f){
-                    f.printStackTrace();
-                }
-                /*
-                HttpURLConnection client = null;
-                try {
-                    URL url = new URL("http://130.82.239.118:3000/transactions/create");
-                    client = (HttpURLConnection) url.openConnection();
-                }
-                catch(IOException e) {mResultTextView.setText("bad connection");}
+                // Start Client
+                AsyncHttpClient client = new AsyncHttpClient();
 
-                try {
-                    client.setRequestMethod("POST");
-                    client.setRequestProperty("Key", "Value");
-                    client.setDoOutput(true);
-                }
-                catch(ProtocolException e){mResultTextView.setText("bad request");}
+                // Do the POST request: Send data to backend
+                RequestParams params = new RequestParams();
+                params.put("customerqrcode", UserBarcode);
+                params.put("cupqrcode", CupBarcode);
 
-                try {
-                    BufferedOutputStream outputPost = new BufferedOutputStream(client.getOutputStream());
-                    outputPost.write(JsonString.getBytes());
-                    outputPost.flush();
-                    outputPost.close();
-                }
-                catch (IOException e) {mResultTextView.setText("bad post");}
-
-                client.disconnect();**/
-
-                RequestQueue queue = Volley.newRequestQueue(this);
-                String url ="http://130.82.239.118:3000/transactions/create";
-
-                // Request a string response from the provided URL.
-                StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                // Display the first 500 characters of the response string.
-                                mResultTextView.setText("Response is: "+ response.substring(0,500));
-                            }
-                        }, new Response.ErrorListener() {
+                // Prepare POST request
+                client.post("http://130.82.239.118:3000/transactions/create", params, new AsyncHttpResponseHandler() {
                     @Override
-                    public void onErrorResponse(VolleyError error) {
-                        mResultTextView.setText(error.toString());
+                    public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                        if (statusCode == 201) {
+                            mResultTextView.setText("Sent data successfully");
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                        mResultTextView.setText("Error while sending data.");
                     }
                 });
 
-// Add the request to the RequestQueue.
-                queue.add(stringRequest);
-
                 break;
-
             default:
                 break;
         }
