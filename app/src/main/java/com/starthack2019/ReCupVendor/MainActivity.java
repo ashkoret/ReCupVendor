@@ -13,8 +13,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import com.google.gson.*;
-import java.util.Iterator;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -45,8 +43,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        //StrictMode.ThreadPolicy policy = StrictMode.ThreadPolicy.LAX;
-        //StrictMode.setThreadPolicy(policy);
 
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
@@ -118,7 +114,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 mResultTextView.setText("User code parsed");
 
                 // Prepare POST request
-                client.post("http://130.82.239.118:3000/transactions/create", params, new AsyncHttpResponseHandler() {
+                // Old URL: http://130.82.239.118:3000/transactions/create
+                client.post("http://ec2-35-165-83-189.us-west-2.compute.amazonaws.com:3000/transactions/create", params, new AsyncHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                         if (statusCode == 201) {
