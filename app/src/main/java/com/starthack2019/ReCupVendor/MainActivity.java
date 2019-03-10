@@ -111,6 +111,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 params.put("customersignature", UserSignature);
                 params.put("cupqrcode", CupBarcode);
                 params.put("timestamp", TrTimeStamp);
+                params.put("type", 1);
                 mResultTextView.setText("User code parsed");
 
                 // Prepare POST request
@@ -125,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
                     @Override
                     public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
-                        mResultTextView.setText("Error while sending data.");
+                        mResultTextView.setText(Integer.toString(statusCode));
                     }
                 });
 
